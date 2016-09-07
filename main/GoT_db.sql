@@ -78,34 +78,34 @@ INSERT INTO Houses VALUES('Tarly', 'First In Battle');
 
 --INSERT Characters (charID, fName, lName, House, Sex)
 --
---INSERT INTO Character VALUES('charID', 'fName',	'lName',	'House',	      'Title',   'Sex', 'Father','Mother',	'Liege', 'KilledBy');
+--INSERT INTO Character VALUES('charID', 'fName',	'lName',	'House',		'Title',   'Sex', 'Father',		'Mother',	'Liege', 	'KilledBy');
 --House Baratheon
-INSERT INTO Character VALUES('S1002', 'Robert',		'Baratheon', 'Baratheon',	'Lord',  'M', null, null,		'S102',		'W1005')
-INSERT INTO Character VALUES('S1003', 'Stannis',	'Baratheon', 'Baratheon',	'Lord',  'M', null, null,		null,		  null)
-INSERT INTO Character VALUES ('S1004', 'Renly',		'Baratheon', 'Baratheon',	'Lord',  'M', null, null,		null,		  'S1003');
-INSERT INTO Character VALUES ('S1005', 'Joffrey',	'Baratheon', 'Baratheon',	'Prince','M', null, null,		null,	  	null);
+INSERT INTO Character VALUES('S1002', 'Robert',		'Baratheon', 'Baratheon',	'Lord',  	'M', 	null, 		null,		'S102',		'W1005')
+INSERT INTO Character VALUES('S1003', 'Stannis',	'Baratheon', 'Baratheon',	'Lord',  	'M', 	null, 		null,		null,		null)
+INSERT INTO Character VALUES ('S1004', 'Renly',		'Baratheon', 'Baratheon',	'Lord',  	'M', 	null, 		null,		null,		'S1003');
+INSERT INTO Character VALUES ('S1005', 'Joffrey',	'Baratheon', 'Baratheon',	'Prince',	'M', 	null, 		null,		null,	  	null);
 --House Stark
-INSERT INTO Character VALUES ('N1002', 'Eddard',	'Stark',	'Stark',		   'Lord',  'M', null,	null,		'S1002',	'S1005');
-INSERT INTO Character VALUES ('N1003', 'Catelyn',	'Stark',	'Tully',		     null , 'F', null,	null,		null,		 'R2001');
-INSERT INTO Character VALUES ('N1004', 'Robb',		'Stark',	'Stark',		     null,  'M', 'N1002', 'N1003',	null,		 'N2001');
-INSERT INTO Character VALUES ('N1005', 'Sansa',		'Stark',	'Stark',		     null,  'M', 'N1002', 'N1003',	null,		 null);
-INSERT INTO Character VALUES ('N1006', 'Bran',		'Stark',	'Stark',		     null,  'M', 'N1002', 'N1003',	null,		 null);
-INSERT INTO Character VALUES ('N1007', 'Arya',		'Stark',	'Stark',		     null,  'F', 'N1002', 'N1003',	null,		 null);
-INSERT INTO Character VALUES ('N1008', 'Rickon',	'Stark',	'Stark',		     null,  'M', 'N1002', 'N1003',	null,		 null);
-INSERT INTO Character VALUES ('N1009', 'Jon',		 'Snow',	'Stark',		       null,  'M', 'N1002', null,		null,		 null);
-INSERT INTO Character VALUES ('N1010', 'Theon',		'Greyjoy',	'Stark',			 null,  'M', null,  null,		null,		 null);
+INSERT INTO Character VALUES ('N1002', 'Eddard',	'Stark',	'Stark',		'Lord',  	'M', 	null,		null,		'S1002',	'S1005');
+INSERT INTO Character VALUES ('N1003', 'Catelyn',	'Stark',	'Tully',		null , 		'F', 	null,		null,		null,		'R2001');
+INSERT INTO Character VALUES ('N1004', 'Robb',		'Stark',	'Stark',		null,  		'M', 	'N1002', 	'N1003',	null,		'N2001');
+INSERT INTO Character VALUES ('N1005', 'Sansa',		'Stark',	'Stark',		null,  		'M', 	'N1002', 	'N1003',	null,		null);
+INSERT INTO Character VALUES ('N1006', 'Bran',		'Stark',	'Stark',		null,  		'M', 	'N1002', 	'N1003',	null,		null);
+INSERT INTO Character VALUES ('N1007', 'Arya',		'Stark',	'Stark',		null,  		'F', 	'N1002', 	'N1003',	null,		null);
+INSERT INTO Character VALUES ('N1008', 'Rickon',	'Stark',	'Stark',		null,  		'M', 	'N1002', 	'N1003',	null,		null);
+INSERT INTO Character VALUES ('N1009', 'Jon',		 'Snow',	'Stark',		null,  		'M', 	'N1002', 	null,		null,		null);
+INSERT INTO Character VALUES ('N1010', 'Theon',		'Greyjoy',	'Stark',		null,  		'M', 	null,  		null,		null,		null);
 --House Lannister
-INSERT INTO Character VALUES ('W1001', 'Tywin',		'Lannister', 'Lannister',	'Lord',  'M', null, null,		'S1002',	null);
-INSERT INTO Character VALUES ('W1002', 'Joanna',	'Lannister', 'Lannister',	 null,   'F', null, null,		null,		  null);
-INSERT INTO Character VALUES ('W1004', 'Jamie',		'Lannister', 'Lannister',	 null,   'M', 'W1001', null,		null,		  null);
-INSERT INTO Character VALUES ('W1005', 'Cersie',	'Lannister', 'Lannister',	 null,   'F', 'W1001', null,		null,		  null);
-INSERT INTO Character VALUES ('W1006', 'Tyrion',	'Lannister', 'Lannister',	'Lord',  'M', 'W1001', null,		null,		  null);
+INSERT INTO Character VALUES ('W1001', 'Tywin',		'Lannister', 'Lannister',	'Lord',  	'M', 	null, 		null,		'S1002',	null);
+INSERT INTO Character VALUES ('W1002', 'Joanna',	'Lannister', 'Lannister',	 null,   	'F', 	null, 		null,		null,		null);
+INSERT INTO Character VALUES ('W1004', 'Jamie',		'Lannister', 'Lannister',	 null,   	'M', 	'W1001', 	null,		null,		null);
+INSERT INTO Character VALUES ('W1005', 'Cersie',	'Lannister', 'Lannister',	 null,   	'F', 	'W1001', 	null,		null,		null);
+INSERT INTO Character VALUES ('W1006', 'Tyrion',	'Lannister', 'Lannister',	'Lord',  	'M', 	'W1001', 	null,		null,		null);
 --Bolton
-INSERT INTO Character VALUES ('N2000', 'Roose SR',		'Bolton', 'Bolton',		null,  'M', null, null,		    null,		  null);
-INSERT INTO Character VALUES ('N2001', 'Roose',		'Bolton', 'Bolton',			  'Lord',  'M', 'N2000', null,	  'N1002',  null);
-INSERT INTO Character VALUES ('N2001', 'Ramsay',		'Snow', 'Bolton',			  null,  'M', 'N2001', null,		  null,		  null);
+INSERT INTO Character VALUES ('N2000', 'Roose SR',	'Bolton', 'Bolton',			null,  		'M', 	null, 		null,		null,		null);
+INSERT INTO Character VALUES ('N2001', 'Roose',		'Bolton', 'Bolton',			'Lord',  	'M', 	'N2000', 	null,		'N1002',	null);
+INSERT INTO Character VALUES ('N2001', 'Ramsay',	'Snow', 'Bolton',			null,  		'M', 	'N2001', 	null,		null,		null);
 --Frey
-INSERT INTO Character VALUES ('R2001', 'Walder',	'Frey', 'Frey',				    'Lord', 'M', null, null,		null,		null);
+INSERT INTO Character VALUES ('R2001', 'Walder',	'Frey', 'Frey',				'Lord', 	'M', 	null, 		null,		null,		null);
 
 --locale
 INSERT INTO Locale VALUES('Kings Landing',	'Baratheon', 'City',	'S1002', 'The Crownlands');
