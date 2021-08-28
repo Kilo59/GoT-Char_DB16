@@ -5,7 +5,8 @@ name = "pypi"
 
 [packages]
 fastapi = "*"
-httpx = "*"
+gunicorn = "*"
+# httpx = "*"
 pydantic = {extras = ["dotenv"], version = "*"}
 sqlmodel = "*"
 sqlalchemy2-stubs = "==0.0.2a14"  # pre-release must be pinned
