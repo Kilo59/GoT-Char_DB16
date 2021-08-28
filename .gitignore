@@ -83,7 +83,7 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
-.env
+# .env
 .venv
 env/
 venv/
@@ -106,3 +106,6 @@ venv.bak/
 
 # IDE settings
 .vscode
+
+# DB stuff
+database.db
