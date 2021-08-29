@@ -134,6 +134,8 @@ API = fastapi.FastAPI(
     title="GOT Characters",
     description="Spoiler free Game of Thrones Characters API.",
     version=API_VERSION,
+    docs_url="/",
+    redoc_url="/docs",
     on_startup=[startup],
 )
 
