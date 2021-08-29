@@ -10,10 +10,8 @@ Nouns
     Houses
     Book
 """
-import csv
 import functools
 import logging
-import pathlib
 from pprint import pformat as pf
 from typing import List, Optional, Union
 
@@ -21,8 +19,11 @@ import fastapi
 import pydantic
 import sqlalchemy.exc
 import sqlmodel
+from fastapi import Depends, Query
 from pydantic import AnyUrl, SecretStr
 from sqlmodel import Field, SQLModel
+
+import api.data
 
 LOGGGER = logging.getLogger("got-api")
 
@@ -94,23 +95,25 @@ def db_session() -> sqlmodel.Session:
         yield session
 
 
-def all_houses(
-    session: sqlmodel.Session = fastapi.Depends(db_session),
+def query_houses(
+    session: sqlmodel.Session = Depends(db_session),
     limit: Optional[int] = None,
     skip: Optional[int] = None,
+    name: Optional[str] = Query(None, description="`name` substring filter"),
+    words: Optional[str] = Query(None, description="`words` substring filter"),
 ):
-    return session.exec(sqlmodel.select(House).offset(skip).limit(limit)).all()
+    statement = sqlmodel.select(House)
+    if name:
+        statement = statement.filter(House.name.contains(name))
+    if words:
+        statement = statement.filter(House.words.contains(words))
+    return session.exec(statement.offset(skip).limit(limit)).all()
 
 
 # #############################################################################
 
 
 # API tasks
-
-
-def from_csv(model: sqlmodel.SQLModel, path: pathlib) -> List[sqlmodel.SQLModel]:
-    with open(path, mode="r") as csv_file:
-        return [model.parse_obj(row) for row in csv.DictReader(csv_file)]
 
 
 def cleanup():
@@ -124,12 +127,10 @@ def startup():
 
     create_db_and_tables()
 
-    data_dir = pathlib.Path.cwd() / "data"
-
     LOGGGER.info("Seeding data ...")
     try:
         with sqlmodel.Session(ENGINE) as session:
-            for i, model in enumerate(from_csv(House, data_dir / "houses.csv")):
+            for i, model in enumerate(api.data.from_csv(House, api.data.HOUSES_CSV)):
                 try:
                     session.add(model)
                     LOGGGER.info(f"{i} - {model.name} added")
@@ -178,5 +179,5 @@ async def handle_db_error(
 
 
 @APP.get("/houses", response_model=List[House])
-async def get_houses(houses=fastapi.Depends(all_houses)):
+async def get_houses(houses=Depends(query_houses)):
     return houses
