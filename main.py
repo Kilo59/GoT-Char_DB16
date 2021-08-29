@@ -15,13 +15,13 @@ import functools
 import logging
 import pathlib
 from pprint import pformat as pf
-from typing import List, Optional
+from typing import List, Optional, Union
 
 import fastapi
 import pydantic
 import sqlalchemy.exc
 import sqlmodel
-from pydantic import SecretStr
+from pydantic import SecretStr, PostgresDsn, AnyUrl
 from sqlmodel import Field
 
 logging.basicConfig(level=logging.DEBUG)
@@ -32,10 +32,16 @@ LOGGGER = logging.getLogger("got-api")
 
 
 class _Config(pydantic.BaseSettings):
-    conn_str: str
+    database_url: Union[PostgresDsn, AnyUrl, str]
     client_id: str
     client_secret: SecretStr
-    refresh_on_startup: bool = False
+    refresh_on_startup: bool = True
+
+    @pydantic.validator("database_url")
+    def postgres_scheme(cls, v: str) -> str:
+        if v.startswith("postgres:"):
+            v.scheme = "postgresql"
+        return v
 
 
 @functools.lru_cache(maxsize=1)
@@ -71,7 +77,7 @@ class Character(sqlmodel.SQLModel, table=True):
 
 # Database
 
-ENGINE = sqlmodel.create_engine(get_config().conn_str)
+ENGINE = sqlmodel.create_engine(get_config().database_url)
 
 
 def db_session() -> sqlmodel.Session:
@@ -96,8 +102,6 @@ def from_csv(model: sqlmodel.SQLModel, path: pathlib) -> List[sqlmodel.SQLModel]
 
 def cleanup():
     LOGGGER.info("cleaning up ...")
-    if not get_config().refresh_on_startup:
-        return
     sqlmodel.SQLModel.metadata.drop_all(ENGINE)
     LOGGGER.info("All Tables dropped")
 
@@ -107,12 +111,16 @@ def startup():
     sqlmodel.SQLModel.metadata.create_all(ENGINE)
 
     data_dir = pathlib.Path.cwd() / "data"
-    if not get_config().refresh_on_startup:
-        return cleanup()
+    if get_config().refresh_on_startup:
+        cleanup()
+
     LOGGGER.info("Seeding data ...")
-    with sqlmodel.Session(ENGINE) as session:
-        session.add_all(from_csv(House, data_dir / "houses.csv"))
-        session.commit()
+    try:
+        with sqlmodel.Session(ENGINE) as session:
+            session.add_all(from_csv(House, data_dir / "houses.csv"))
+            session.commit()
+    except sqlalchemy.exc.OperationalError as db_err:
+        LOGGGER.error(db_err)
 
 
 # #############################
@@ -127,7 +135,6 @@ API = fastapi.FastAPI(
     description="Spoiler free Game of Thrones Characters API.",
     version=API_VERSION,
     on_startup=[startup],
-    on_shutdown=[cleanup],
 )
 
 

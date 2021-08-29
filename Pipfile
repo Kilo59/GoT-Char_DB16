@@ -7,6 +7,7 @@ name = "pypi"
 fastapi = "*"
 gunicorn = "*"
 # httpx = "*"
+psycopg2-binary = "*"
 pydantic = {extras = ["dotenv"], version = "*"}
 sqlmodel = "*"
 sqlalchemy2-stubs = "==0.0.2a14"  # pre-release must be pinned
