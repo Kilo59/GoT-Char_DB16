@@ -83,7 +83,7 @@ ENGINE = sqlmodel.create_engine(DATABASE_URL, echo=True)
 
 def create_db_and_tables():
     LOGGGER.info("creating databse and tables ...")
-    SQLModel.metadata.create_all(ENGINE)
+    SQLModel.metadata.create_all(ENGINE, checkfirst=True)
 
 
 def db_session() -> sqlmodel.Session:
@@ -119,6 +119,8 @@ def cleanup():
 def startup():
     LOGGGER.info("Starting up ...")
 
+    create_db_and_tables()
+
     data_dir = pathlib.Path.cwd() / "data"
 
     LOGGGER.info("Seeding data ...")
@@ -131,8 +133,9 @@ def startup():
                 except sqlalchemy.exc.OperationalError as insert_err:
                     LOGGGER.info(f"{i} - {insert_err}")
             session.commit()
-    except sqlalchemy.exc.OperationalError as db_err:
-        LOGGGER.error(db_err)
+    except (sqlalchemy.exc.OperationalError, sqlalchemy.exc.IntegrityError) as db_err:
+        LOGGGER.warning(f"{db_err.__class__.__name__} - Data may already exist")
+        LOGGGER.warning(db_err)
 
 
 # #############################
