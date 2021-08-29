@@ -99,7 +99,7 @@ def all_houses(
     limit: Optional[int] = None,
     skip: Optional[int] = None,
 ):
-    return session.exec(sqlmodel.select(House)).all()
+    return session.exec(sqlmodel.select(House).offset(skip).limit(limit)).all()
 
 
 # #############################################################################
