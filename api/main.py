@@ -1,6 +1,6 @@
 """
-GOT-CHAR main.py
-~~~~~~~~~~~~~~~
+GOT-CHAR api.main.py
+~~~~~~~~~~~~~~~~~~~~
 
 Nouns
 -----
@@ -21,18 +21,17 @@ import fastapi
 import pydantic
 import sqlalchemy.exc
 import sqlmodel
-from pydantic import SecretStr, PostgresDsn, AnyUrl
-from sqlmodel import Field
+from pydantic import AnyUrl, SecretStr
+from sqlmodel import Field, SQLModel
 
 logging.basicConfig(level=logging.DEBUG)
 LOGGGER = logging.getLogger("got-api")
-
 
 # Config
 
 
 class _Config(pydantic.BaseSettings):
-    database_url: Union[PostgresDsn, AnyUrl, str]
+    database_url: Union[AnyUrl, str]
     client_id: str
     client_secret: SecretStr
     refresh_on_startup: bool = True
@@ -56,12 +55,12 @@ def get_config(_env_file=".env", **kwargs) -> _Config:
 # Models
 
 
-class House(sqlmodel.SQLModel, table=True):
+class House(SQLModel, table=True):
     name: str = Field(primary_key=True)
     words: Optional[str] = None
 
 
-class Character(sqlmodel.SQLModel, table=True):
+class Character(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     first_name: str
     last_name: Optional[str] = None
@@ -77,7 +76,13 @@ class Character(sqlmodel.SQLModel, table=True):
 
 # Database
 
-ENGINE = sqlmodel.create_engine(get_config().database_url)
+DATABASE_URL = get_config().database_url
+ENGINE = sqlmodel.create_engine(DATABASE_URL, echo=True)
+
+
+def create_db_and_tables():
+    LOGGGER.info("creating databse and tables ...")
+    SQLModel.metadata.create_all(ENGINE)
 
 
 def db_session() -> sqlmodel.Session:
@@ -85,7 +90,11 @@ def db_session() -> sqlmodel.Session:
         yield session
 
 
-def all_houses(session: sqlmodel.Session = fastapi.Depends(db_session)):
+def all_houses(
+    session: sqlmodel.Session = fastapi.Depends(db_session),
+    limit: Optional[int] = None,
+    skip: Optional[int] = None,
+):
     return session.exec(sqlmodel.select(House)).all()
 
 
@@ -108,7 +117,6 @@ def cleanup():
 
 def startup():
     LOGGGER.info("Starting up ...")
-    sqlmodel.SQLModel.metadata.create_all(ENGINE)
 
     data_dir = pathlib.Path.cwd() / "data"
     if get_config().refresh_on_startup:
@@ -117,7 +125,12 @@ def startup():
     LOGGGER.info("Seeding data ...")
     try:
         with sqlmodel.Session(ENGINE) as session:
-            session.add_all(from_csv(House, data_dir / "houses.csv"))
+            for i, model in enumerate(from_csv(House, data_dir / "houses.csv")):
+                try:
+                    session.add(model)
+                    LOGGGER.info(f"{i} - {model.name} added")
+                except sqlalchemy.exc.OperationalError as insert_err:
+                    LOGGGER.info(f"{i} - {insert_err}")
             session.commit()
     except sqlalchemy.exc.OperationalError as db_err:
         LOGGGER.error(db_err)
@@ -130,7 +143,7 @@ def startup():
 
 API_VERSION = "0.0.1a"
 
-API = fastapi.FastAPI(
+APP = fastapi.FastAPI(
     title="GOT Characters",
     description="Spoiler free Game of Thrones Characters API.",
     version=API_VERSION,
@@ -145,7 +158,7 @@ API = fastapi.FastAPI(
 # Error Handlers
 
 
-@API.exception_handler(sqlalchemy.exc.OperationalError)
+@APP.exception_handler(sqlalchemy.exc.OperationalError)
 async def handle_db_error(
     request: fastapi.Request, exc: sqlalchemy.exc.OperationalError
 ):
@@ -158,6 +171,6 @@ async def handle_db_error(
 # Controllers
 
 
-@API.get("/houses", response_model=List[House])
+@APP.get("/houses", response_model=List[House])
 async def get_houses(houses=fastapi.Depends(all_houses)):
     return houses

@@ -21,13 +21,14 @@ prospector = "*"
 flake8="<3.9"  # fixes prospector dependency issue
 pytest = "*"
 pytest-icdiff = "*"
+requests = "*"  # required for TestClient
 respx = "*"
 
 [requires]
 python_version = "3.9"
 
 [scripts]
-app = "uvicorn main:API"
-dev = "uvicorn main:API --reload"
+app = "uvicorn api.main:APP"
+dev = "uvicorn api.main:APP --reload"
 fmt = "black ."
 sort = "isort ."
