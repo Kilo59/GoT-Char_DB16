@@ -120,8 +120,6 @@ def startup():
     LOGGGER.info("Starting up ...")
 
     data_dir = pathlib.Path.cwd() / "data"
-    if get_config().refresh_on_startup:
-        cleanup()
 
     LOGGGER.info("Seeding data ...")
     try:
