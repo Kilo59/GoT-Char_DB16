@@ -24,7 +24,6 @@ import sqlmodel
 from pydantic import AnyUrl, SecretStr
 from sqlmodel import Field, SQLModel
 
-logging.basicConfig(level=logging.DEBUG)
 LOGGGER = logging.getLogger("got-api")
 
 # Config
@@ -34,7 +33,7 @@ class _Config(pydantic.BaseSettings):
     database_url: Union[AnyUrl, str]
     client_id: str
     client_secret: SecretStr
-    refresh_on_startup: bool = True
+    debug_mode: bool = False
 
     @pydantic.validator("database_url")
     def postgres_scheme(cls, v: str) -> str:
@@ -47,9 +46,13 @@ class _Config(pydantic.BaseSettings):
 @functools.lru_cache(maxsize=1)
 def get_config(_env_file=".env", **kwargs) -> _Config:
     config = _Config(_env_file=_env_file, **kwargs)
+    # NOTE: beware of exposing user:password in database_url
     LOGGGER.debug(pf(config))
     return config
 
+
+DEBUG_MODE: bool = get_config().debug_mode
+logging.basicConfig(level=logging.DEBUG if DEBUG_MODE else logging.INFO)
 
 # #############################################################################
 
@@ -78,7 +81,7 @@ class Character(SQLModel, table=True):
 # Database
 
 DATABASE_URL = get_config().database_url
-ENGINE = sqlmodel.create_engine(DATABASE_URL, echo=True)
+ENGINE = sqlmodel.create_engine(DATABASE_URL, echo=DEBUG_MODE)
 
 
 def create_db_and_tables():
@@ -164,6 +167,7 @@ APP = fastapi.FastAPI(
 async def handle_db_error(
     request: fastapi.Request, exc: sqlalchemy.exc.OperationalError
 ):
+    LOGGGER.info(f"{exc.__class__.__name__} - {request.url}")
     LOGGGER.exception(exc)
     return fastapi.responses.JSONResponse(
         status_code=500, content={"detail": "Database Error"}
