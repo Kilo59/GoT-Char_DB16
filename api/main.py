@@ -38,8 +38,9 @@ class _Config(pydantic.BaseSettings):
 
     @pydantic.validator("database_url")
     def postgres_scheme(cls, v: str) -> str:
-        if v.startswith("postgres:"):
-            v.scheme = "postgresql"
+        if v.startswith("postgres://"):
+            LOGGGER.warning("updating postgres connection string")
+            return v.replace("postgres://", "postgresql://", 1)
         return v
 
 

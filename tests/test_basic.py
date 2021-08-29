@@ -10,6 +10,7 @@ from api.main import APP, get_config
     [
         "postgres://localhost",
         "postgresql://localhost:5432",
+        "postgres://user@localhost/got",
         "sqlite:///database.db",
         "sqlite://",
     ],
@@ -18,7 +19,7 @@ def test_database_url(database_url: str):
     config = get_config(database_url=database_url)
 
     if database_url.startswith("postgres"):
-        assert config.database_url.scheme == "postgresql"
+        assert config.database_url.startswith("postgresql://")
     else:
         assert config.database_url == database_url
 
