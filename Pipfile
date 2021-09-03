@@ -24,8 +24,8 @@ pytest-icdiff = "*"
 requests = "*"  # required for TestClient
 respx = "*"
 
-[requires]
-python_version = "3.9"
+# [requires]
+# python_version = "3.9"
 
 [scripts]
 app = "uvicorn api.main:APP"
