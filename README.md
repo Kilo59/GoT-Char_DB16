@@ -8,10 +8,16 @@ REST API with OAuth scopes that protect users from spoilers.
 
 ### TODO
 
-- [] Create Models
-- [] REST API
-- [] Heroku Deploy
-- [] Basic OAuth integration
-- [] Google Based Oauth /login or /token
-- [] Scopes to protect user from spoilers
-- [] Enable OAuth code flow from Swagger
+- [ ] Models
+- [ ] REST API
+  - [ ] Locale
+  - [ ] Death
+  - [ ] Character
+  - [x] Houses
+  - [ ] Book
+- [x] Heroku Deploy
+- [ ] Update from data csv
+- [ ] Basic OAuth integration
+- [ ] Google Based Oauth /login or /token
+- [ ] Scopes to protect user from spoilers
+- [ ] Enable OAuth code flow from Swagger
