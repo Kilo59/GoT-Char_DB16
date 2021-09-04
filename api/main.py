@@ -99,9 +99,9 @@ def get_engine(**config) -> sqlalchemy.engine.Engine:
     )
 
 
-def create_db_and_tables():
+def create_db_and_tables(**config):
     LOGGGER.info("creating databse and tables ...")
-    SQLModel.metadata.create_all(get_engine(), checkfirst=True)
+    SQLModel.metadata.create_all(get_engine(**config), checkfirst=True)
 
 
 def db_session() -> sqlmodel.Session:
@@ -136,14 +136,14 @@ def cleanup():
     LOGGGER.info("All Tables dropped")
 
 
-def startup(**config_kw):
+def startup(**config):
     LOGGGER.info("Starting up ...")
 
-    create_db_and_tables()
+    create_db_and_tables(**config)
 
     LOGGGER.info("Seeding data ...")
     try:
-        with sqlmodel.Session(get_engine(**config_kw)) as session:
+        with sqlmodel.Session(get_engine(**config)) as session:
             for i, model in enumerate(api.data.from_csv(House, api.data.HOUSES_CSV)):
                 try:
                     session.add(model)
