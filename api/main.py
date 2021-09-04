@@ -12,8 +12,9 @@ Nouns
 """
 import functools
 import logging
+import sys
 from pprint import pformat as pf
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import fastapi
 import pydantic
@@ -27,6 +28,7 @@ from sqlmodel import Field, SQLModel
 import api.data
 
 LOGGGER = logging.getLogger("got-api")
+PY_VERSION: Tuple[int, int] = sys.version_info[:2]
 
 # Config
 
@@ -84,9 +86,17 @@ class Character(SQLModel, table=True):
 
 
 @functools.lru_cache(maxsize=1)
-def get_engine(**config_kw) -> sqlalchemy.engine.Engine:
-    config = get_config(**config_kw)
-    return sqlmodel.create_engine(config.database_url, echo=config.debug_mode)
+def get_engine(**config) -> sqlalchemy.engine.Engine:
+    config = get_config(**config)
+    connect_args = {}
+
+    if config.database_url.startswith("sqlite:") and PY_VERSION == (3, 7):
+        # TODO: investigate why this is only a problem on 3.7
+        connect_args["check_same_thread"] = False
+
+    return sqlmodel.create_engine(
+        config.database_url, connect_args=connect_args, echo=config.debug_mode
+    )
 
 
 def create_db_and_tables():
