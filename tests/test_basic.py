@@ -6,7 +6,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from api.data import HOUSES_CSV, from_csv
-from api.main import APP, House, get_config
+from api.main import APP, House, cleanup, get_config, startup
 
 
 @pytest.mark.parametrize(
@@ -30,7 +30,9 @@ def test_database_url(database_url: str):
 
 @pytest.fixture
 def api_client() -> TestClient:
-    return TestClient(APP)
+    startup()  # setup
+    yield TestClient(APP)
+    cleanup()  # teardown
 
 
 @pytest.mark.parametrize(

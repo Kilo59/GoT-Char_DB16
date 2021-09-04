@@ -12,11 +12,13 @@ Nouns
 """
 import functools
 import logging
+import sys
 from pprint import pformat as pf
-from typing import List, Optional, Union
+from typing import List, Optional, Tuple, Union
 
 import fastapi
 import pydantic
+import sqlalchemy.engine
 import sqlalchemy.exc
 import sqlmodel
 from fastapi import Depends, Query
@@ -26,6 +28,7 @@ from sqlmodel import Field, SQLModel
 import api.data
 
 LOGGGER = logging.getLogger("got-api")
+PY_VERSION: Tuple[int, int] = sys.version_info[:2]
 
 # Config
 
@@ -81,17 +84,28 @@ class Character(SQLModel, table=True):
 
 # Database
 
-DATABASE_URL = get_config().database_url
-ENGINE = sqlmodel.create_engine(DATABASE_URL, echo=DEBUG_MODE)
+
+@functools.lru_cache(maxsize=1)
+def get_engine(**config) -> sqlalchemy.engine.Engine:
+    config = get_config(**config)
+    connect_args = {}
+
+    if config.database_url.startswith("sqlite:") and PY_VERSION == (3, 7):
+        # TODO: investigate why this is only a problem on 3.7
+        connect_args["check_same_thread"] = False
+
+    return sqlmodel.create_engine(
+        config.database_url, connect_args=connect_args, echo=config.debug_mode
+    )
 
 
-def create_db_and_tables():
+def create_db_and_tables(**config):
     LOGGGER.info("creating databse and tables ...")
-    SQLModel.metadata.create_all(ENGINE, checkfirst=True)
+    SQLModel.metadata.create_all(get_engine(**config), checkfirst=True)
 
 
 def db_session() -> sqlmodel.Session:
-    with sqlmodel.Session(ENGINE) as session:
+    with sqlmodel.Session(get_engine()) as session:
         yield session
 
 
@@ -118,18 +132,18 @@ def query_houses(
 
 def cleanup():
     LOGGGER.info("cleaning up ...")
-    sqlmodel.SQLModel.metadata.drop_all(ENGINE)
+    sqlmodel.SQLModel.metadata.drop_all(get_engine())
     LOGGGER.info("All Tables dropped")
 
 
-def startup():
+def startup(**config):
     LOGGGER.info("Starting up ...")
 
-    create_db_and_tables()
+    create_db_and_tables(**config)
 
     LOGGGER.info("Seeding data ...")
     try:
-        with sqlmodel.Session(ENGINE) as session:
+        with sqlmodel.Session(get_engine(**config)) as session:
             for i, model in enumerate(api.data.from_csv(House, api.data.HOUSES_CSV)):
                 try:
                     session.add(model)

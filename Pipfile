@@ -23,9 +23,10 @@ pytest = "*"
 pytest-icdiff = "*"
 requests = "*"  # required for TestClient
 respx = "*"
+typed-ast = {python_version = "<'3.8'", version = "*"}
 
-[requires]
-python_version = "3.9"
+# [requires]
+# python_version = "3.9"
 
 [scripts]
 app = "uvicorn api.main:APP"
