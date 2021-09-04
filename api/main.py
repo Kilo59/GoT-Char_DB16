@@ -17,6 +17,7 @@ from typing import List, Optional, Union
 
 import fastapi
 import pydantic
+import sqlalchemy.engine
 import sqlalchemy.exc
 import sqlmodel
 from fastapi import Depends, Query
@@ -81,17 +82,20 @@ class Character(SQLModel, table=True):
 
 # Database
 
-DATABASE_URL = get_config().database_url
-ENGINE = sqlmodel.create_engine(DATABASE_URL, echo=DEBUG_MODE)
+
+@functools.lru_cache(maxsize=1)
+def get_engine(**config_kw) -> sqlalchemy.engine.Engine:
+    config = get_config(**config_kw)
+    return sqlmodel.create_engine(config.database_url, echo=config.debug_mode)
 
 
 def create_db_and_tables():
     LOGGGER.info("creating databse and tables ...")
-    SQLModel.metadata.create_all(ENGINE, checkfirst=True)
+    SQLModel.metadata.create_all(get_engine(), checkfirst=True)
 
 
 def db_session() -> sqlmodel.Session:
-    with sqlmodel.Session(ENGINE) as session:
+    with sqlmodel.Session(get_engine()) as session:
         yield session
 
 
@@ -118,18 +122,18 @@ def query_houses(
 
 def cleanup():
     LOGGGER.info("cleaning up ...")
-    sqlmodel.SQLModel.metadata.drop_all(ENGINE)
+    sqlmodel.SQLModel.metadata.drop_all(get_engine())
     LOGGGER.info("All Tables dropped")
 
 
-def startup():
+def startup(**config_kw):
     LOGGGER.info("Starting up ...")
 
     create_db_and_tables()
 
     LOGGGER.info("Seeding data ...")
     try:
-        with sqlmodel.Session(ENGINE) as session:
+        with sqlmodel.Session(get_engine(**config_kw)) as session:
             for i, model in enumerate(api.data.from_csv(House, api.data.HOUSES_CSV)):
                 try:
                     session.add(model)
